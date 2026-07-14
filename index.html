@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр «Студенческий лидер»</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh}
+.wrap{max-width:720px;margin:0 auto;padding:20px 12px}
+h1{font-size:18px;font-weight:700;margin-bottom:4px}
+.sub{font-size:13px;color:#94a3b8;margin-bottom:16px}
+.label{font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px}
+.scroll::-webkit-scrollbar{height:4px}
+.scroll::-webkit-scrollbar-track{background:#f1f5f9}
+.scroll::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px}
+.btn-group{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid #e2e8f0;background:#fff;color:#475569;transition:all .15s}
+.btn-group.active{background:#4f46e5;color:#fff;border-color:#4f46e5}
+.btn-group .badge{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:700;background:#f1f5f9;color:#64748b}
+.btn-group.active .badge{background:rgba(255,255,255,.2);color:#fff}
+.group-count{font-size:11px;color:#94a3b8}
+.btn-group.active .group-count{color:rgba(255,255,255,.7)}
+.group-title{font-size:13px;color:#64748b;margin:6px 0 8px}
+.btn-test{flex-shrink:0;padding:6px 12px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid #e2e8f0;background:#fff;color:#64748b;transition:all .15s}
+.btn-test.active{background:#1e293b;color:#fff;border-color:#1e293b}
+.card{background:#fff;border-radius:16px;border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-top:12px;overflow:hidden}
+.card-head{padding:16px 20px 12px;border-bottom:1px solid #f1f5f9}
+.card-title{font-weight:600;color:#0f172a}
+.card-sub{font-size:12px;color:#94a3b8}
+.score{display:flex;align-items:center;gap:10px;font-size:13px;color:#64748b}
+.score b{color:#059669}
+.pct{font-weight:600}
+.progress{margin-top:10px;height:6px;background:#f1f5f9;border-radius:99px;overflow:hidden}
+.progress-bar{height:100%;background:#6366f1;border-radius:99px;transition:width .3s}
+.prog-label{margin-top:6px;font-size:12px;color:#94a3b8}
+.card-body{padding:20px}
+.question{font-size:16px;font-weight:500;color:#0f172a;line-height:1.5;margin-bottom:16px}
+.options{display:flex;flex-direction:column;gap:8px}
+.opt{width:100%;text-align:left;display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;transition:all .15s;font-size:14px;color:#374151}
+.opt:disabled{cursor:default}
+.opt.correct{background:#f0fdf4;border-color:#4ade80}
+.opt.wrong{background:#fef2f2;border-color:#f87171}
+.opt.dim{background:#fafafa;color:#9ca3af}
+.opt-letter{flex-shrink:0;width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font-size:12px;font-weight:700;background:#f1f5f9;color:#64748b}
+.opt.correct .opt-letter{background:#22c55e;color:#fff}
+.opt.wrong .opt-letter{background:#ef4444;color:#fff}
+.tf-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tf-btn{padding:14px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;font-weight:600;font-size:15px;cursor:pointer;transition:all .15s;color:#374151}
+.tf-btn:disabled{cursor:default}
+.tf-btn.correct{background:#f0fdf4;border-color:#4ade80;color:#166534}
+.tf-btn.wrong{background:#fef2f2;border-color:#f87171;color:#991b1b}
+.tf-note{margin-top:10px;font-size:13px;border-radius:10px;padding:10px 14px}
+.tf-note.ok{background:#f0fdf4;color:#166534}
+.tf-note.err{background:#fef2f2;color:#991b1b}
+.reveal-btn{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;background:#4f46e5;color:#fff;font-size:14px;font-weight:500;border:none;cursor:pointer}
+.answer-box{border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;padding:12px 16px;color:#1e293b}
+.answer-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin-bottom:4px}
+.answer-text{font-size:14px;line-height:1.6}
+.grade-row{margin-top:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.grade-label{font-size:13px;color:#64748b}
+.grade-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.grade-btn.knew{border:1px solid #bbf7d0;background:#fff;color:#16a34a}
+.grade-btn.knew.active{background:#22c55e;border-color:#22c55e;color:#fff}
+.grade-btn.forgot{border:1px solid #fecaca;background:#fff;color:#dc2626}
+.grade-btn.forgot.active{background:#ef4444;border-color:#ef4444;color:#fff}
+.card-foot{padding:10px 20px;border-top:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.nav-btn{display:flex;align-items:center;gap:4px;padding:7px 12px;border-radius:8px;font-size:13px;color:#475569;background:none;border:1px solid #e2e8f0;cursor:pointer}
+.nav-btn:disabled{opacity:.4;cursor:not-allowed}
+.tool-btns{display:flex;gap:6px}
+.tool-btn{display:flex;align-items:center;gap:4px;padding:7px 10px;border-radius:8px;font-size:12px;color:#64748b;background:none;border:1px solid #e2e8f0;cursor:pointer}
+.done-box{margin-top:14px;border-radius:14px;border:1px solid #c7d2fe;background:#eef2ff;padding:14px 18px;display:flex;align-items:center;gap:12px}
+.done-icon{font-size:30px;flex-shrink:0}
+.done-title{font-weight:600;color:#3730a3}
+.done-sub{font-size:13px;color:#4338ca}
+.grid{margin-top:14px;display:flex;flex-wrap:wrap;gap:5px}
+.grid-btn{width:28px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;color:#94a3b8;font-size:11px;font-weight:500;cursor:pointer}
+.grid-btn.correct{background:#22c55e;border-color:#22c55e;color:#fff}
+.grid-btn.wrong{background:#ef4444;border-color:#ef4444;color:#fff}
+.grid-btn.open-done{background:#94a3b8;border-color:#94a3b8;color:#fff}
+.grid-btn.current{outline:2px solid #6366f1;outline-offset:2px}
+.empty{background:#fff;border-radius:16px;border:2px dashed #cbd5e1;padding:40px 24px;text-align:center;margin-top:12px}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-title{font-weight:600;color:#374151;margin-bottom:6px}
+.empty-sub{font-size:13px;color:#6b7280}
+.loading{text-align:center;padding:60px 20px;color:#94a3b8;font-size:15px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎓 Тренажёр «Студенческий лидер»</h1>
+  <p class="sub">Банк вопросов по группам НПА · автопроверка</p>
+  <div id="app"><div class="loading">Загрузка тестов...</div></div>
+</div>
+
+<script>
+const LETTERS = ['А','Б','В','Г'];
+
+let ALL_TESTS = [];
+let GROUPS = [];
+let state = { gIdx: 0, tIdx: 0, progress: {} };
+
+async function loadTests() {
+  try {
+    const r = await fetch('tests.json');
+    ALL_TESTS = await r.json();
+    buildGroups();
+    initProgress();
+    render();
+  } catch(e) {
+    document.getElementById('app').innerHTML = '<div class="loading">Ошибка загрузки tests.json. Проверьте файл.</div>';
+  }
+}
+
+function buildGroups() {
+  const map = {};
+  ALL_TESTS.forEach(function(t) {
+    if (!map[t.group]) map[t.group] = { id: t.group, title: t.groupTitle, tests: [] };
+    map[t.group].tests.push(t);
+  });
+  GROUPS = Object.values(map);
+}
+
+function initProgress() {
+  ALL_TESTS.forEach(function(t) {
+    if (!state.progress[t.id]) {
+      state.progress[t.id] = { order: t.questions.map(function(_,i){return i;}), current: 0, answers: {} };
+    }
+  });
+}
+
+function shuffle(arr) {
+  const b = arr.slice();
+  for (let i = b.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    const tmp = b[i]; b[i] = b[j]; b[j] = tmp;
+  }
+  return b;
+}
+
+function getTest() {
+  const g = GROUPS[state.gIdx];
+  if (!g) return null;
+  return g.tests[state.tIdx] || g.tests[0];
+}
+
+function getProg() {
+  const t = getTest();
+  if (!t) return null;
+  return state.progress[t.id];
+}
+
+function countScore(t, prog) {
+  let correct = 0, answered = 0;
+  t.questions.forEach(function(q, k) {
+    const a = prog.answers[k];
+    if (!a) return;
+    if (q.type === 'open') { if (a.grade) { answered++; if (a.grade === 'correct') correct++; } }
+    else { answered++; if (a.given === q.correct) correct++; }
+  });
+  return { correct, answered };
+}
+
+function render() {
+  const app = document.getElementById('app');
+  if (!GROUPS.length) { app.innerHTML = '<div class="loading">Нет данных</div>'; return; }
+
+  const g = GROUPS[state.gIdx];
+  const t = getTest();
+  const prog = getProg();
+
+  let html = '<div class="label">Группы</div><div class="scroll">';
+  GROUPS.forEach(function(gr, i) {
+    const act = i === state.gIdx ? ' active' : '';
+    html += '<button class="btn-group'+act+'" onclick="setG('+i+')">'
+      + '<span class="badge">'+(i+1)+'</span>'
+      + gr.title
+      + '<span class="group-count">· '+gr.tests.length+'</span>'
+      + '</button>';
+  });
+  html += '</div>';
+
+  html += '<div class="group-title">'+g.title+'</div>';
+
+  if (g.tests.length) {
+    html += '<div class="scroll">';
+    g.tests.forEach(function(tt, i) {
+      const act = i === state.tIdx ? ' active' : '';
+      html += '<button class="btn-test'+act+'" onclick="setT('+i+')">' + tt.title + '</button>';
+    });
+    html += '</div>';
+  }
+
+  if (!t) {
+    html += '<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">В этой группе пока нет тестов</div><div class="empty-sub">Добавьте тест в файл tests.json</div></div>';
+    app.innerHTML = html;
+    return;
+  }
+
+  const order = prog.order;
+  const qIdx = order[prog.current];
+  const q = t.questions[qIdx];
+  const ans = prog.answers[qIdx];
+  const sc = countScore(t, prog);
+  const total = t.questions.length;
+  const pct = sc.answered ? Math.round(sc.correct/sc.answered*100) : 0;
+  const pctColor = pct >= 70 ? '#059669' : pct >= 40 ? '#d97706' : '#dc2626';
+  const allDone = sc.answered === total;
+
+  html += '<div class="card"><div class="card-head">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">'
+    + '<div><div class="card-title">'+t.title+'</div><div class="card-sub">'+t.subtitle+'</div></div>'
+    + '<div class="score">Верно: <b>'+sc.correct+'</b> / '+sc.answered+' <span style="color:#cbd5e1">из '+total+'</span>'
+    + (sc.answered ? '<span class="pct" style="color:'+pctColor+'">'+pct+'%</span>' : '')
+    + '</div></div>'
+    + '<div class="progress"><div class="progress-bar" style="width:'+((prog.current+1)/total*100)+'%"></div></div>'
+    + '<div class="prog-label">Вопрос '+(prog.current+1)+' из '+total+'</div>'
+    + '</div>';
+
+  html += '<div class="card-body"><div class="question">'+q.q+'</div>';
+
+  if (q.type === 'mc') {
+    html += '<div class="options">';
+    q.options.forEach(function(opt, i) {
+      const chosen = ans && ans.given === i;
+      const isCorr = i === q.correct;
+      let cls = 'opt';
+      if (ans) { cls += isCorr ? ' correct' : (chosen ? ' wrong' : ' dim'); }
+      const lCls = (ans && isCorr) ? ' style="background:#22c55e;color:#fff"' : (ans && chosen ? ' style="background:#ef4444;color:#fff"' : '');
+      html += '<button class="'+cls+'" '+(ans?'disabled':'')+' onclick="answerMc('+qIdx+','+i+')">'
+        + '<span class="opt-letter"'+lCls+'>'+LETTERS[i]+'</span>'
+        + '<span>'+opt+'</span>'
+        + (ans && isCorr ? '<span style="margin-left:auto">✓</span>' : '')
+        + (ans && chosen && !isCorr ? '<span style="margin-left:auto">✗</span>' : '')
+        + '</button>';
+    });
+    html += '</div>';
+  }
+
+  if (q.type === 'tf') {
+    html += '<div class="tf-grid">';
+    [true, false].forEach(function(val) {
+      const chosen = ans && ans.given === val;
+      const isCorr = val === q.correct;
+      let cls = 'tf-btn';
+      if (ans) { cls += isCorr ? ' correct' : (chosen ? ' wrong' : ''); }
+      html += '<button class="'+cls+'" '+(ans?'disabled':'')+' onclick="answerTf('+qIdx+','+val+')">'
+        + (val ? 'Да ✓' : 'Нет ✗') + '</button>';
+    });
+    html += '</div>';
+    if (ans && q.note) {
+      html += '<div class="tf-note '+(ans.given===q.correct?'ok':'err')+'">'+q.note+'</div>';
+    }
+  }
+
+  if (q.type === 'open') {
+    if (!ans || !ans.revealed) {
+      html += '<button class="reveal-btn" onclick="reveal('+qIdx+')">👁 Показать ответ</button>';
+    } else {
+      html += '<div class="answer-box"><div class="answer-label">Ответ</div><div class="answer-text">'+q.answer+'</div></div>'
+        + '<div class="grade-row"><span class="grade-label">Как у тебя?</span>'
+        + '<button class="grade-btn knew'+(ans.grade==='correct'?' active':'')+'" onclick="grade('+qIdx+',\'correct\')">✓ Знал</button>'
+        + '<button class="grade-btn forgot'+(ans.grade==='wrong'?' active':'')+'" onclick="grade('+qIdx+',\'wrong\')">✗ Не знал</button>'
+        + '</div>';
+    }
+  }
+
+  html += '</div>';
+
+  html += '<div class="card-foot">'
+    + '<button class="nav-btn" '+(prog.current===0?'disabled':'')+' onclick="go(-1)">◀ Назад</button>'
+    + '<div class="tool-btns">'
+    + '<button class="tool-btn" onclick="reset(false)">↺ Заново</button>'
+    + '<button class="tool-btn" onclick="reset(true)">⇄ Перемешать</button>'
+    + '</div>'
+    + '<button class="nav-btn" '+(prog.current===total-1?'disabled':'')+' onclick="go(1)">Далее ▶</button>'
+    + '</div></div>';
+
+  if (allDone) {
+    html += '<div class="done-box"><div class="done-icon">🏆</div><div>'
+      + '<div class="done-title">Набор пройден!</div>'
+      + '<div class="done-sub">Результат: '+sc.correct+' из '+total+' ('+pct+'%). Можно сбросить или перемешать.</div>'
+      + '</div></div>';
+  }
+
+  html += '<div class="grid">';
+  order.forEach(function(qi, i) {
+    const a = prog.answers[qi];
+    const qq = t.questions[qi];
+    let cls = 'grid-btn';
+    if (i === prog.current) cls += ' current';
+    if (a) {
+      if (qq.type === 'open') {
+        cls += a.grade === 'correct' ? ' correct' : a.grade === 'wrong' ? ' wrong' : ' open-done';
+      } else {
+        cls += a.given === qq.correct ? ' correct' : ' wrong';
+      }
+    }
+    html += '<button class="'+cls+'" onclick="jump('+i+')">'+(i+1)+'</button>';
+  });
+  html += '</div>';
+
+  app.innerHTML = html;
+}
+
+function setG(i) { state.gIdx = i; state.tIdx = 0; render(); }
+function setT(i) { state.tIdx = i; render(); }
+
+function answerMc(qIdx, i) {
+  const t = getTest();
+  const prog = getProg();
+  if (prog.answers[qIdx]) return;
+  prog.answers[qIdx] = { given: i };
+  render();
+}
+
+function answerTf(qIdx, val) {
+  const prog = getProg();
+  if (prog.answers[qIdx]) return;
+  prog.answers[qIdx] = { given: val };
+  render();
+}
+
+function reveal(qIdx) {
+  const prog = getProg();
+  prog.answers[qIdx] = { revealed: true, grade: null };
+  render();
+}
+
+function grade(qIdx, g) {
+  const prog = getProg();
+  prog.answers[qIdx] = { revealed: true, grade: g };
+  render();
+}
+
+function go(d) {
+  const prog = getProg();
+  const t = getTest();
+  prog.current = Math.max(0, Math.min(t.questions.length-1, prog.current+d));
+  render();
+}
+
+function jump(i) {
+  const prog = getProg();
+  prog.current = i;
+  render();
+}
+
+function reset(shuf) {
+  const t = getTest();
+  const ids = t.questions.map(function(_,i){return i;});
+  state.progress[t.id] = { order: shuf ? shuffle(ids) : ids, current: 0, answers: {} };
+  render();
+}
+
+loadTests();
+</script>
+</body>
+</html>
